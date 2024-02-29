@@ -33,6 +33,18 @@ def pdf2str(pdf_path: str) -> str:
     return output_string.getvalue()
 
 
+_REG_XML = compile(r'<Font .*?>([^><]+?)</Font>')
+_REG_SPACES = compile(r'\s+')
+
+
+def xml2str(xml_path: str) -> str:
+    with open(xml_path, encoding='utf8') as file:
+        return '\n'.join(
+            _REG_SPACES.sub(' ', s).replace('&#10;', '')
+            for s in _REG_XML.findall(file.read())
+        )
+
+
 _REG_FIND_REPEAT = compile(r'(\D+)\1{4,}')  # consecutively repeated (at least 5 times) adjacent substrings
 
 
@@ -121,11 +133,14 @@ class DocumentExtractor:
         return sum(len(c) > 1 for c in s.split()) >= 5 or ('.' in s[:-5] and len(s) >= 20)
 
 
-def pdf2csv(pdf_path: str, output_dir='') -> DocumentExtractor:
-    document = pdf2str(pdf_path)
+def file2csv(pdf_or_xml_path: str, output_dir='') -> DocumentExtractor:
+    if pdf_or_xml_path.endswith('xml'):
+        document = xml2str(pdf_or_xml_path)
+    else:
+        document = pdf2str(pdf_or_xml_path)
     extractor = DocumentExtractor(document)
     paragraph = extractor.extract()
     df = pd.DataFrame({'paragraph': paragraph})
-    csv_path = os.path.join(output_dir, stem_name(pdf_path) + '.csv')
+    csv_path = os.path.join(output_dir, stem_name(pdf_or_xml_path) + '.csv')
     df.to_csv(csv_path, sep=',', index=False, encoding='utf-8')
     return extractor
