@@ -39,11 +39,10 @@ class EsgDataset:
 
 
 class EsgBertPredict:
-    def __init__(self, csv_path, output_dir, hyper_parameters=None) -> None:
+    def __init__(self, csv_path, output_dir: str, hyper_parameters=None):
         self.CSV_PATH = csv_path
-        self.output_path = output_dir
         output_name = os.path.basename(csv_path).replace('.csv', '_label.csv')
-        self.output_path = os.path.join(output_dir, output_name)
+        self.output_name = os.path.join(output_dir, output_name)
 
         self.HP = hyper_parameters or HYPER_PARAMETERS
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -94,7 +93,7 @@ class EsgBertPredict:
 
     def _gen_csv(self, output_label):
         self.df['label'] = output_label
-        self.df.to_csv(self.output_path, index=False)
+        self.df.to_csv(self.output_name, index=False)
 
     def main(self):
         x = self._read_csv()
