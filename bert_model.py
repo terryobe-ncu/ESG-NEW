@@ -186,8 +186,9 @@ class EsgBertPredict:
             attention_mask = inputs['attention_mask'].to(self.device)
             outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
             outputs = sigmoid(outputs)
-            predicted_labels = (outputs > self.HP['threshold']).int()
-            predicted_labels = predicted_labels.cpu().tolist()
+            # predicted_labels = (outputs > self.HP['threshold']).int()
+            predicted_labels = outputs.cpu().tolist()
             output_label.extend(predicted_labels)
         self.df_test['label'] = output_label
+        self.df_test['label'] = self.df_test['label'].apply(lambda x: [round(val, 3) for val in x])
         self.df_test.to_csv(output_path, index=False)
